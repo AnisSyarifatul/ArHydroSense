@@ -191,8 +191,8 @@ Gunakan klien MQTT apa pun (misalnya MQTTX) dan subscribe ke topik `wokwi-smartg
 
 | Skenario | Kelembaban tanah | Hasil yang diharapkan | Output|
 |---|---|---|---|
-| Tanah kering | di bawah 40% | Relay aktif, LED merah menyala, `pump: "NYALA"` | docs/Nyala.png |
-| Tanah lembap | 40% atau lebih | Relay mati, LED hijau menyala, `pump: "MATI"` | docs/Mati.png |
+| Tanah kering | di bawah 40% | Relay aktif, LED merah menyala, `pump: "NYALA"` | ![Simulasi Wokwi](docs/Nyala.png) |
+| Tanah lembap | 40% atau lebih | Relay mati, LED hijau menyala, `pump: "MATI"` | ![Simulasi Wokwi](docs/Mati.png) |
 | Data terkirim | semua kondisi | Payload JSON muncul di klien MQTT setiap 3 detik |
 
 ## Batasan Saat Ini
