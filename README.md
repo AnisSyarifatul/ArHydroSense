@@ -49,13 +49,13 @@ ArHydroSense adalah prototipe sistem IoT yang membaca kelembaban tanah, suhu, da
 
 ```mermaid
 flowchart LR
-    DHT["DHT22<br/>suhu & kelembaban udara"] --> ESP
+    DHT["DHT22<br/>suhu dan kelembaban udara"] --> ESP
     SOIL["Sensor kelembaban tanah"] --> ESP
     ESP["ESP32<br/>logika ambang"] --> RELAY["Relay"]
     RELAY --> PUMP["Pompa air"]
     ESP --> LED["LED merah / hijau"]
-    ESP -- "MQTT publish (JSON)" --> BROKER["MQTT Broker"]
-    BROKER -. "tahap berikutnya" .-> DASH["Dashboard web"]
+    ESP -->|MQTT publish JSON| BROKER["MQTT Broker"]
+    BROKER -.->|tahap berikutnya| DASH["Dashboard web"]
 ```
 
 Keputusan penyiraman dihitung langsung di ESP32. Broker MQTT hanya dipakai untuk pengiriman data monitoring.
