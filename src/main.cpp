@@ -13,8 +13,8 @@
 #define SOIL_PIN 34
 #define RELAY_PIN 25
 
-#define LED_MERAH 26
-#define LED_HIJAU 27
+#define LED_MERAH 27
+#define LED_HIJAU 26
 
 // ==========================================
 // 2. KONFIGURASI WIFI
@@ -120,8 +120,8 @@ void kontrolPenyiraman(int kelembapanTanah) {
         // Tanah kering
         digitalWrite(RELAY_PIN, HIGH);
 
-        digitalWrite(LED_MERAH, HIGH);
-        digitalWrite(LED_HIJAU, LOW);
+        digitalWrite(LED_MERAH, LOW);
+        digitalWrite(LED_HIJAU, HIGH);
 
         Serial.println("Kondisi Tanah : KERING");
         Serial.println("Status Pompa  : NYALA");
@@ -131,8 +131,8 @@ void kontrolPenyiraman(int kelembapanTanah) {
         // Tanah lembap
         digitalWrite(RELAY_PIN, LOW);
 
-        digitalWrite(LED_MERAH, LOW);
-        digitalWrite(LED_HIJAU, HIGH);
+        digitalWrite(LED_MERAH, HIGH);
+        digitalWrite(LED_HIJAU, LOW);
 
         Serial.println("Kondisi Tanah : LEMBAP");
         Serial.println("Status Pompa  : MATI");
