@@ -12,7 +12,7 @@ ArHydroSense adalah prototipe sistem IoT yang membaca kelembaban tanah, suhu, da
 
 > **Status proyek:** fase simulasi. Firmware saat ini diuji di [Wokwi](https://wokwi.com/) dan dibangun dengan PlatformIO. Perangkat keras fisik belum dirakit.
 
-**Demo simulasi:** [Buka di Wokwi](https://wokwi.com/projects/479678177083323393) · 
+**Demo simulasi:** [Buka di Wokwi](https://wokwi.com/projects/479678177083323393)
 
 ![Simulasi Wokwi](docs/simulation.png)
 
@@ -40,7 +40,7 @@ ArHydroSense adalah prototipe sistem IoT yang membaca kelembaban tanah, suhu, da
 
 - Pembacaan suhu dan kelembaban udara (DHT22) serta kelembaban tanah (sensor soil moisture).
 - Kontrol pompa otomatis melalui relay berdasarkan ambang kelembaban tanah.
-- Indikator status dengan LED: merah untuk tanah kering, hijau untuk tanah lembap.
+- Indikator status pompa dengan LED: hijau menyala saat pompa aktif (tanah kering), merah menyala saat pompa mati (tanah lembap).
 - Publikasi data sensor dan status pompa melalui MQTT (JSON) setiap 3 detik.
 - Log serial yang terbaca jelas untuk debugging.
 - Dapat disimulasikan penuh di Wokwi sebelum perangkat keras dibeli.
@@ -62,14 +62,16 @@ Keputusan penyiraman dihitung langsung di ESP32. Broker MQTT hanya dipakai untuk
 
 ## Komponen
 
-| Komponen | Fungsi |
-|---|---|
-| ESP32 DevKit | Mikrokontroler utama dan koneksi WiFi |
-| DHT22 | Suhu dan kelembaban udara |
-| Sensor kelembaban tanah | Pembacaan kelembaban tanah (analog) |
-| Modul relay | Saklar untuk pompa |
-| Mini pompa air DC | Aktuator penyiraman |
-| LED merah dan hijau | Indikator status tanah |
+| Komponen | Fungsi | Pada simulasi |
+|---|---|---|
+| ESP32 DevKit | Mikrokontroler utama dan koneksi WiFi | ESP32 DevKit |
+| DHT22 | Suhu dan kelembaban udara | DHT22 |
+| Sensor kelembaban tanah | Pembacaan kelembaban tanah (analog) | Potensiometer |
+| Modul relay | Saklar untuk pompa | Relay |
+| Mini pompa air DC | Aktuator penyiraman | Ditandai oleh status relay |
+| LED merah dan hijau | Indikator status pompa | LED merah dan hijau |
+
+Karena Wokwi tidak menyediakan sensor kelembaban tanah, nilainya dimodelkan dengan potensiometer pada pin analog yang sama.
 
 ## Konfigurasi Pin
 
@@ -78,8 +80,8 @@ Keputusan penyiraman dihitung langsung di ESP32. Broker MQTT hanya dipakai untuk
 | DHT22 (data) | 15 |
 | Sensor kelembaban tanah (analog) | 34 |
 | Relay | 25 |
-| LED merah | 26 |
-| LED hijau | 27 |
+| LED merah | 27 |
+| LED hijau | 26 |
 
 GPIO 34 berada pada ADC1, sehingga tetap dapat dibaca saat WiFi aktif.
 
@@ -88,7 +90,7 @@ GPIO 34 berada pada ADC1, sehingga tetap dapat dibaca saat WiFi aktif.
 1. ESP32 terhubung ke WiFi, lalu ke broker MQTT.
 2. Setiap 3 detik, ESP32 membaca DHT22 dan sensor kelembaban tanah.
 3. Nilai analog tanah (0–4095) dipetakan ke persentase 0–100%.
-4. Jika kelembaban tanah **di bawah 40%**, relay aktif (pompa menyala) dan LED merah menyala. Jika tidak, pompa mati dan LED hijau menyala.
+4. Jika kelembaban tanah **di bawah 40%**, relay aktif (pompa menyala) dan LED hijau menyala. Jika tidak, pompa mati dan LED merah menyala.
 5. Data dikirim ke topik MQTT dalam format JSON.
 
 Ambang batas dapat diubah melalui konstanta `BATAS_KELEMBAPAN` di `src/main.cpp`.
@@ -119,13 +121,20 @@ Ambang batas dapat diubah melalui konstanta `BATAS_KELEMBAPAN` di `src/main.cpp`
 
 ```
 ArHydroSense/
+├── .vscode/
+├── docs/                 # Gambar dokumentasi
+│   ├── simulation.png
+│   ├── Nyala.png
+│   └── Mati.png
+├── include/
+├── lib/
 ├── src/
 │   └── main.cpp          # Firmware utama
-├── docs/
-│   └── wokwi-simulation.png
+├── test/
+├── .gitignore
 ├── diagram.json          # Rangkaian Wokwi
-├── wokwi.toml            # Konfigurasi Wokwi untuk PlatformIO
 ├── platformio.ini        # Konfigurasi PlatformIO
+├── wokwi.toml            # Konfigurasi Wokwi untuk PlatformIO
 └── README.md
 ```
 
@@ -141,7 +150,7 @@ ArHydroSense/
 
 1. Clone repositori:
    ```bash
-   git clone https://github.com/<username>/ArHydroSense.git
+   git clone https://github.com/AnisSyarifatul/ArHydroSense.git
    cd ArHydroSense
    ```
 2. Buka folder di VS Code, lalu build firmware:
@@ -157,7 +166,7 @@ ArHydroSense/
    ```
    Sesuaikan nama environment jika berbeda dengan `esp32dev`.
 4. Jalankan simulasi lewat command palette: **Wokwi: Start Simulator**.
-5. Buka serial monitor untuk melihat log, dan ubah nilai sensor kelembaban tanah pada simulasi untuk menguji logika.
+5. Buka serial monitor untuk melihat log, dan putar potensiometer (sensor tanah) pada simulasi untuk menguji logika.
 
 Contoh `platformio.ini`:
 
@@ -189,11 +198,11 @@ Gunakan klien MQTT apa pun (misalnya MQTTX) dan subscribe ke topik `wokwi-smartg
 
 ## Skenario Pengujian
 
-| Skenario | Kelembaban tanah | Hasil yang diharapkan | Output|
+| Skenario | Kelembaban tanah | Hasil yang diharapkan | Output |
 |---|---|---|---|
-| Tanah kering | di bawah 40% | Relay aktif, LED merah menyala, `pump: "NYALA"` | ![Simulasi Wokwi](docs/Nyala.png) |
-| Tanah lembap | 40% atau lebih | Relay mati, LED hijau menyala, `pump: "MATI"` | ![Simulasi Wokwi](docs/Mati.png) |
-| Data terkirim | semua kondisi | Payload JSON muncul di klien MQTT setiap 3 detik |
+| Tanah kering | di bawah 40% | Relay aktif, LED hijau menyala, `pump: "NYALA"` | ![Pompa nyala](docs/Nyala.png) |
+| Tanah lembap | 40% atau lebih | Relay mati, LED merah menyala, `pump: "MATI"` | ![Pompa mati](docs/Mati.png) |
+| Data terkirim | semua kondisi | Payload JSON muncul di klien MQTT setiap 3 detik | - |
 
 ## Batasan Saat Ini
 
@@ -204,6 +213,8 @@ Bagian ini mencatat kondisi prototipe apa adanya, agar langkah berikutnya jelas.
 - **Belum ada histeresis.** Satu ambang tunggal dapat membuat relay sering hidup-mati di sekitar nilai 40%.
 - **Belum ada batas durasi pompa.** Jika sensor error, pompa dapat menyala terus.
 - **Broker MQTT publik tanpa autentikasi.** Topik dan data dapat dibaca atau ditulis siapa saja. Hanya layak untuk simulasi.
+- **Kontrol pompa bergantung pada koneksi jaringan.** Koneksi WiFi dan MQTT diproses secara blocking, sehingga logika penyiraman tidak berjalan selama jaringan terputus.
+- **Kegagalan pembacaan DHT22 menghentikan siklus.** Saat DHT22 gagal dibaca, kontrol pompa dan pengiriman data pada siklus itu dilewati.
 - **Kontrol dari jarak jauh belum ada.** Firmware baru mengirim data, belum menerima perintah.
 
 ## Roadmap
@@ -219,13 +230,12 @@ Bagian ini mencatat kondisi prototipe apa adanya, agar langkah berikutnya jelas.
 
 ## Tim
 
+Proyek mata kuliah **Internet of Things (IoT)**.
+
 | Nama | NPM |
 |---|---|
 | Rahma Hidayati Fitrah | G1A023074 |
-| Anis Syarifatul Mursyidah| G1A023036 |
+| Anis Syarifatul Mursyidah | G1A023036 |
 | Herlita | G1A023018 |
 
 Nama **ArHydroSense** diambil dari inisial anggota tim (**A**nis, **R**ahma, **H**erlita) dan *Hydro* + *Sense*.
-
-IoT (Internet Of Things)
-
