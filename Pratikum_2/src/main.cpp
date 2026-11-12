@@ -188,8 +188,7 @@ void loop() {
     doc["pump_on"] = statusPompa;
     doc["relay_switches"] = hitungTransisiRelai;
     doc["fan_pwm_pct"] = serialized(String(fanPct, 1));
-    doc["ctrl_mode"] = modeOverridePaksa ? "MANUAL" :
-                       (GUNAKAN_HISTERESIS ? "HYSTERESIS" : "SINGLE_THR");
+    doc["ctrl_mode"] = modeOverridePaksa ? "MANUAL" : (GUNAKAN_HISTERESIS ? "HYSTERESIS" : "SINGLE_THR");
 
     serializeJson(doc, Serial);
     Serial.println();
