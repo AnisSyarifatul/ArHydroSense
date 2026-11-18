@@ -1,0 +1,31 @@
+{
+  "name": "BMP280",
+  "author": "Anis Syarifatul Mursyidah",
+  "pins": [ "VCC", "GND", "SDA", "SCL" ],
+  "controls": [
+    {
+      "id": "TEMP",
+      "label": "Temperature (0.01 °C, 2500 = 25.00 °C)",
+      "type": "range",
+      "min": -4000,
+      "max": 8500,
+      "step": 100
+    },
+    {
+      "id": "PRES",
+      "label": "Pressure (Pa)",
+      "type": "range",
+      "min": 30000,
+      "max": 110000,
+      "step": 100
+    },
+    {
+      "id": "ALTITUDE",
+      "label": "Altitude (m)",
+      "type": "range",
+      "min": -500,
+      "max": 9000,
+      "step": 10
+    }
+  ]
+}

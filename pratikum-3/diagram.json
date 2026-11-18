@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "author": "Herlita",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-esp32-devkit-v1", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    { "type": "chip-bmp280", "id": "bmp1", "top": 58.62, "left": -225.6, "attrs": {} },
+    { "type": "board-ssd1306", "id": "oled1", "top": -120, "left": 20, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btnWake",
+      "top": 159.8,
+      "left": -144,
+      "attrs": { "color": "yellow" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "ledStatus",
+      "top": 140.4,
+      "left": 167,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "rLed",
+      "top": 186.35,
+      "left": 163.2,
+      "attrs": { "value": "220" }
+    }
+  ],
+  "connections": [
+    [ "esp:TX0", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX0", "$serialMonitor:TX", "", [] ],
+    [ "bmp1:VCC", "esp:3V3", "red", [ "v-48", "h322.1" ] ],
+    [ "bmp1:GND", "esp:GND.1", "black", [ "v38.4", "h322.1" ] ],
+    [ "bmp1:SDA", "esp:D21", "blue", [] ],
+    [ "bmp1:SCL", "esp:D22", "green", [ "v-28.8", "h218.31" ] ],
+    [ "oled1:VCC", "esp:3V3", "red", [] ],
+    [ "oled1:GND", "esp:GND.1", "black", [] ],
+    [ "oled1:SDA", "esp:D21", "blue", [] ],
+    [ "oled1:SCL", "esp:D22", "green", [] ],
+    [ "btnWake:1.l", "esp:D15", "gold", [ "v-28.8", "h245.3" ] ],
+    [ "btnWake:2.l", "esp:GND.2", "black", [ "v19.4", "h149" ] ],
+    [ "esp:D2", "rLed:1", "orange", [] ],
+    [ "rLed:2", "ledStatus:A", "orange", [] ],
+    [ "ledStatus:C", "esp:GND.2", "black", [] ]
+  ],
+  "dependencies": {}
+}
