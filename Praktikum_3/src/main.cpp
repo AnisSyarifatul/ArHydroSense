@@ -26,11 +26,6 @@ Adafruit_BMP280 bmp;
 RTC_DATA_ATTR int nomorSiklusBoot = 0;
 RTC_DATA_ATTR float riwayatSuhuTerakhir = 0.0f;
 RTC_DATA_ATTR float riwayatTekananTerakhir = 0.0f;
-// Rekor ekstrem suhu (soal C6). Nilai awal = penanda "belum ada data"
-#define SUHU_MAKS_AWAL -1000.0f
-#define SUHU_MIN_AWAL   1000.0f
-RTC_DATA_ATTR float suhuMaks = SUHU_MAKS_AWAL;
-RTC_DATA_ATTR float suhuMin  = SUHU_MIN_AWAL;
 
 struct DataSensor {
   float suhu;
@@ -78,26 +73,6 @@ void cetakDiagnostikWakeup() {
   }
   Serial.printf("[RTC MEM] Riwayat Siklus Lalu -> Suhu: %.2f C | Tekanan: %.2f hPa\n",
                 riwayatSuhuTerakhir, riwayatTekananTerakhir);
-  Serial.printf("[RTC MEM] Rekor Suhu -> Max: %.2f C | Min: %.2f C\n",
-                suhuMaks > SUHU_MAKS_AWAL ? suhuMaks : 0.0f,
-                suhuMin < SUHU_MIN_AWAL ? suhuMin : 0.0f);
-}
-
-// Diagnostik I2C Scanner (Eksperimen 1 / Tabel 3.1)
-void pindaiI2C() {
-  Serial.println("[I2C] Memindai bus I2C (SDA=21, SCL=22)...");
-  int jumlah = 0;
-  for (uint8_t alamat = 1; alamat < 127; alamat++) {
-    Wire.beginTransmission(alamat);
-    if (Wire.endTransmission() == 0) {
-      Serial.printf("[I2C] Perangkat ditemukan pada alamat 0x%02X", alamat);
-      if (alamat == 0x76 || alamat == 0x77) Serial.print("  -> Sensor BMP/BME280");
-      if (alamat == 0x3C || alamat == 0x3D) Serial.print("  -> OLED SSD1306");
-      Serial.println();
-      jumlah++;
-    }
-  }
-  Serial.printf("[I2C] Total perangkat terdeteksi: %d\n", jumlah);
 }
 
 void perbaruiTampilanOled(float t, float p, float alt, int siklus, const char *pemicu) {
@@ -107,26 +82,17 @@ void perbaruiTampilanOled(float t, float p, float alt, int siklus, const char *p
 
   display.setCursor(0, 0);
   display.print("UNIB IoT - STASIUN CUACA");
-  display.drawLine(0, 9, 127, 9, SSD1306_WHITE);
+  display.drawLine(0, 10, 127, 10, SSD1306_WHITE);
 
-  display.setCursor(0, 12);
+  display.setCursor(0, 14);
   display.printf("Suhu    : %.1f C", t);
-  display.setCursor(0, 22);
+  display.setCursor(0, 26);
   display.printf("Tekanan : %.1f hPa", p);
-  display.setCursor(0, 32);
+  display.setCursor(0, 38);
   display.printf("Elevasi : %.1f m", alt);
 
-  // Baris rekor ekstrem suhu (RTC memory) - soal C6
-  display.drawLine(0, 42, 127, 42, SSD1306_WHITE);
-  display.setCursor(0, 45);
-  if (suhuMaks > SUHU_MAKS_AWAL && suhuMin < SUHU_MIN_AWAL) {
-    display.printf("Max:%.1f Min:%.1f C", suhuMaks, suhuMin);
-  } else {
-    display.print("Max:-- Min:-- C");
-  }
-
-  // Baris status siklus & pemicu bangun
-  display.setCursor(0, 55);
+  display.drawLine(0, 50, 127, 50, SSD1306_WHITE);
+  display.setCursor(0, 54);
   display.printf("#%d | %s", siklus, pemicu);
   display.display();
 }
@@ -138,10 +104,6 @@ void TaskTampilanDanSerial(void *pvParameters) {
   xSemaphoreGive(mutexData);
 
   if (lokal.valid) {
-    // Perbarui rekor suhu tertinggi/terendah (disimpan di RTC memory)
-    if (lokal.suhu > suhuMaks) suhuMaks = lokal.suhu;
-    if (lokal.suhu < suhuMin)  suhuMin  = lokal.suhu;
-
     perbaruiTampilanOled(lokal.suhu, lokal.tekanan, lokal.elevasi, nomorSiklusBoot, labelPemicu);
 
     JsonDocument doc;
@@ -152,8 +114,6 @@ void TaskTampilanDanSerial(void *pvParameters) {
     doc["pressure_hpa"] = serialized(String(lokal.tekanan, 2));
     doc["altitude_m"] = serialized(String(lokal.elevasi, 1));
     doc["prev_temp_c"] = serialized(String(riwayatSuhuTerakhir, 2));
-    doc["temp_max_c"] = serialized(String(suhuMaks, 2));
-    doc["temp_min_c"] = serialized(String(suhuMin, 2));
     serializeJson(doc, Serial);
     Serial.println();
 
@@ -178,7 +138,6 @@ void setup() {
 
   mutexData = xSemaphoreCreateMutex();
   Wire.begin(21, 22);
-  pindaiI2C();
 
   if (!display.begin(SSD1306_SWITCHCAPVCC, ALAMAT_OLED)) {
     Serial.println("Gagal menemukan layar OLED SSD1306!");

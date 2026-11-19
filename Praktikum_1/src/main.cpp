@@ -36,8 +36,6 @@
 const char* WIFI_SSID = "Wokwi-GUEST";
 const char* WIFI_PASSWORD = "";
 
-// Untuk ESP32 fisik, ganti dengan WiFi milikmu.
-
 // ==========================================
 // 4. KONFIGURASI MQTT
 // ==========================================
